@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 38a60f6c4354e4f878ed6eec29c9c134, type: 3}
+  m_Name: Attack All Skill
+  m_EditorClassIdentifier: 
+  sillName: Attack All
+  skillImg: {fileID: 21300000, guid: 6b3c49391072b4185868c6ee5382611b, type: 3}
+  skillDesc: Attack All Enymy By Base Damage
+  skillType: 1
+  useMana: 3
+  skillValue: 0

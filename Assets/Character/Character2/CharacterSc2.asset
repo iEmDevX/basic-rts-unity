@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4c58d3cc5d1c485d9af8e60426eb7d4, type: 3}
+  m_Name: CharacterSc2
+  m_EditorClassIdentifier: 
+  characterName: Character2
+  model: {fileID: 2438207541018153670, guid: a1631eeb7c9f1465ab8c3dafdc4bda61, type: 3}
+  baseDamage: 2
+  maxHP: 8
+  maxMana: 10
+  acttackSpeed: 1
+  manaHealRate: 2000
+  manaHealValue: 2
+  skill1: {fileID: 11400000, guid: e13169c80119a4c14949d65ad2766c89, type: 2}
+  skill2: {fileID: 11400000, guid: c7ba9b64b688b434096d6a31f54f233a, type: 2}
