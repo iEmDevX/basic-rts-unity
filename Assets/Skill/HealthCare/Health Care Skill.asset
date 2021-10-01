@@ -15,6 +15,6 @@ MonoBehaviour:
   sillName: Health Care
   skillImg: {fileID: 21300000, guid: c54647246f11d4e8cacb3117ca40afd5, type: 3}
   skillDesc: Heal Hp All My Team
-  skillType: 3
+  skillType: 4
   useMana: 3
   skillValue: 10

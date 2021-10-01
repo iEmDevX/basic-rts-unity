@@ -5,21 +5,24 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "My Turn Based/Skill/HealthCareSkill")]
 public class HealthCareSkill : Skill
 {
-    public override void InitSkill(GameObject myCharacterObj, List<GameObject> enemyTeam, List<GameObject> playerTeam)
-    {
-        base.InitSkill(myCharacterObj, enemyTeam, playerTeam);
-    }
 
-    public override SkillResult UseSkill()
+    public override SkillResult UseSkill(GameObject myCharacterObj)
     {
         SkillResult skillResult = new SkillResult();
-
         var characterController = myCharacterObj.GetComponent<CharacterController>();
+
+        Debug.Log(characterController.cerrentMana);
+        Debug.Log(useMana);
         if (characterController.cerrentMana < useMana)
         {
+            skillResult.finish = false;
             return skillResult;
         }
 
+        BattleSystem battleSystem = FindObjectOfType<BattleSystem>();
+        var playerTeam = battleSystem.listPlayerGameObjs;
+
+        Debug.Log(" HealthCareSkill ");
         characterController.ReduceMana(useMana);
         foreach (var player in playerTeam)
         {

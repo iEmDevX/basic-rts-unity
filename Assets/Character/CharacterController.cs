@@ -12,6 +12,7 @@ public enum UnitTeam
 
 public class CharacterController : MonoBehaviour, CharacterInterface
 {
+    public string id;
     public UnitTeam unitTeam;
 
     public string characterName;
@@ -28,17 +29,22 @@ public class CharacterController : MonoBehaviour, CharacterInterface
     [SerializeField] Slider sliderHp;
     [SerializeField] Slider sliderMana;
 
-    private Skill skill1;
-    private Skill skill2;
+    public Skill skill1;
+    public Skill skill2;
 
-    private bool isDie = false;
+    public bool isDie { get; private set; } = false;
+
+    private UiManager uiManager;
 
     private void Awake()
     {
+        uiManager = FindObjectOfType<UiManager>();
     }
 
-    public void InitCharacter(Character character, UnitTeam unitTeam, List<GameObject> enemyTeam, List<GameObject> playerTeam)
+    public void InitCharacter(Character character, UnitTeam unitTeam, string id)
     {
+
+        this.id = id;
         this.unitTeam = unitTeam;
         characterName = character.characterName;
         baseDamage = character.baseDamage;
@@ -63,9 +69,6 @@ public class CharacterController : MonoBehaviour, CharacterInterface
 
         skill1 = character.skill1;
         skill2 = character.skill2;
-        skill1.InitSkill(gameObject, enemyTeam, playerTeam);
-        skill2.InitSkill(gameObject, enemyTeam, playerTeam);
-
 
         if (UnitTeam.Player.Equals(unitTeam))
         {
@@ -76,6 +79,11 @@ public class CharacterController : MonoBehaviour, CharacterInterface
             sliderMana.gameObject.SetActive(false);
         }
 
+    }
+
+    private void OnMouseDown()
+    {
+        uiManager.SetCerrent(gameObject);
     }
 
     private async Task CallBasicManaHeal()
@@ -157,27 +165,36 @@ public class CharacterController : MonoBehaviour, CharacterInterface
 
     public void UseSkill1()
     {
-        if (skill1 == null) return;
+        if (skill1 == null || isDie) return;
         if (SkillType.AllTarget.Equals(skill1.skillType))
         {
-            skill1.UseSkill();
+            skill1.UseSkill(gameObject);
         }
-        if (SkillType.AllBuff.Equals(skill1.skillType))
+        else if (SkillType.AllBuff.Equals(skill1.skillType))
         {
-            skill1.UseSkill();
+            Debug.Log("Use Skill1");
+            skill1.UseSkill(gameObject);
+        }
+        else if (SkillType.MyBuff.Equals(skill1.skillType))
+        {
+            skill1.UseSkill(gameObject);
         }
     }
 
     public void UseSkill2()
     {
-        if (skill2 == null) return;
+        if (skill2 == null || isDie) return;
         if (SkillType.AllTarget.Equals(skill2.skillType))
         {
-            skill2.UseSkill();
+            skill2.UseSkill(gameObject);
         }
         else if (SkillType.AllBuff.Equals(skill2.skillType))
         {
-            skill2.UseSkill();
+            skill2.UseSkill(gameObject);
+        }
+        else if (SkillType.MyBuff.Equals(skill2.skillType))
+        {
+            skill2.UseSkill(gameObject);
         }
     }
 
@@ -204,7 +221,7 @@ public class CharacterController : MonoBehaviour, CharacterInterface
 
 public interface CharacterInterface
 {
-    public void InitCharacter(Character character, UnitTeam unitTeam, List<GameObject> enemyTeam, List<GameObject> playerTeam);
+    public void InitCharacter(Character character, UnitTeam unitTeam, string id);
     public bool TakeDamage(int dmg);
     public void HpHeal(int healValue);
     public void UseBasicHit();

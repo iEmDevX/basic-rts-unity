@@ -15,7 +15,7 @@ MonoBehaviour:
   characterName: Character1
   model: {fileID: 2430942150264870057, guid: 9710dd8cf91204a80ade4d1ce41056d4, type: 3}
   baseDamage: 1
-  maxHP: 10
+  maxHP: 200
   maxMana: 10
   acttackSpeed: 1
   manaHealRate: 3000

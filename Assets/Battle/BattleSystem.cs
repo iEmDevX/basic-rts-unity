@@ -3,6 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks;
 
+public enum GameState
+{
+    WON,
+    LOSE,
+}
+
 public class BattleSystem : MonoBehaviour
 {
     bool isEnd = false;
@@ -13,6 +19,8 @@ public class BattleSystem : MonoBehaviour
     public List<GameObject> listPlayerGameObjs;
 
     private SpawnUnit spawnUnit;
+    private UiManager uiManager;
+    [SerializeField] WinLoseUIManagor winLoseUIManagor;
 
     private int playerTurnSeq = 0;
     private int enemyTurnSeq = 0;
@@ -20,89 +28,93 @@ public class BattleSystem : MonoBehaviour
     private GameObject cerrentCharacter;
     private CharacterController cerrentCon;
 
+    List<string> dieIds = new List<string>();
+
     private void Awake()
     {
         spawnUnit = FindObjectOfType<SpawnUnit>();
+        uiManager = FindObjectOfType<UiManager>();
     }
 
     async void Start()
     {
         await SetupBattle();
 
+        int index = 0;
         foreach (var playerGameObj in listPlayerGameObjs)
-            _ = StartPlayerBasicAttack(playerGameObj);
+        {
+            _ = StartPlayerBasicAttack(playerGameObj, index);
+            index++;
+        }
 
+        index = 0;
         foreach (var enemyGameObj in listEnemyGameObjs)
-            _ = StartEnemyBasicAttack(enemyGameObj);
-
-    }
-
-    async Task StartEnemyBasicAttack(GameObject enemyGameObj)
-    {
-
-        while (!isEnd && enemyGameObj != null)
         {
-            await AnemyBasicAttack(enemyGameObj);
+            _ = StartEnemyBasicAttack(enemyGameObj, index);
+            index++;
         }
-        Debug.Log("Enemy => " + enemyGameObj.name + " Die");
-    }
 
-    async Task StartPlayerBasicAttack(GameObject playerGameObj)
-    {
-        while (!isEnd && playerGameObj != null)
-        {
-            await PlayerBasicAttack(playerGameObj);
-        }
-        Debug.Log("Player => " + playerGameObj.name + " Die");
     }
 
     private async Task SetupBattle()
     {
-        // Spawn Unit Player
-        listPlayerGameObjs = spawnUnit.SetSpawnUnit(ref listPlayer, UnitTeam.Player, listEnemyGameObjs, listPlayerGameObjs);
-
         // Spawn Unit Enemy
-        listEnemyGameObjs = spawnUnit.SetSpawnUnit(ref listEnemy, UnitTeam.Enemy, listEnemyGameObjs, listPlayerGameObjs);
+        listEnemyGameObjs = spawnUnit.SetSpawnUnit(listEnemy, UnitTeam.Enemy);
 
-        await Task.Delay(1000);
-
+        // Spawn Unit Player
+        listPlayerGameObjs = spawnUnit.SetSpawnUnit(listPlayer, UnitTeam.Player);
+        
         PlayerTurn();
+        await Task.Delay(1000);
     }
 
     private void PlayerTurn()
     {
-        cerrentCharacter = listEnemyGameObjs[playerTurnSeq];
-        cerrentCon = cerrentCharacter.GetComponent<CharacterController>();
+        uiManager.SetCerrent(listPlayerGameObjs[2].GetComponent<CharacterController>());
     }
 
-    private IEnumerator PlayerBasicAttack()
+    async Task StartEnemyBasicAttack(GameObject enemyGameObj, int index)
     {
-        // Character use Animation
-        cerrentCon.UseBasicHit();
-
-        // Get Enemy
-        var enemyUnit = listEnemyGameObjs[0];
-
-        // Take Damage
-        var enemyCon = enemyUnit.GetComponent<CharacterController>();
-        bool isDead = enemyCon.TakeDamage(cerrentCon.baseDamage);
-
-        yield return new WaitForSeconds(2f);
-
-        if (isDead)
+        string id = UnitTeam.Enemy.ToString() + index.ToString();
+        while (!isEnd && enemyGameObj != null)
         {
-            listEnemyGameObjs.Remove(enemyUnit);
-            CheckEndGame(true);
+            if (dieIds.Find(item => item == id) != null)
+            {
+                break;
+            }
+            await EnemyBasicAttack(enemyGameObj, id);
         }
+
+        Debug.Log("Enemy => " + enemyGameObj.name + " Die");
     }
 
-    private async Task PlayerBasicAttack(GameObject playerCharacter)
+    async Task StartPlayerBasicAttack(GameObject playerGameObj, int index)
+    {
+        string id = UnitTeam.Player.ToString() + index.ToString();
+        while (!isEnd && playerGameObj != null)
+        {
+            if (dieIds.Find(item => item == id) != null)
+            {
+                break;
+            }
+            await PlayerBasicAttack(playerGameObj, id);
+        }
+
+        Debug.Log("Player => " + playerGameObj.name + " Die");
+    }
+
+    private async Task PlayerBasicAttack(GameObject playerCharacter, string id)
     {
         // Get Player
         var playerCon = playerCharacter.GetComponent<CharacterController>();
 
         // Wait Attack Speed
         await Task.Delay(Mathf.CeilToInt((playerCon.attackSpeed * 1000f)));
+
+        if (dieIds.Find(item => item == id) != null)
+        {
+            return;
+        }
 
         // Get Enemy
         var enemyUnit = listEnemyGameObjs[0];
@@ -116,20 +128,25 @@ public class BattleSystem : MonoBehaviour
 
         if (isDead)
         {
+            dieIds.Add(enemyCon.id);
             listEnemyGameObjs.Remove(enemyUnit);
-            enemyUnit = null;
             CheckEndGame(true);
         }
 
     }
 
-    private async Task AnemyBasicAttack(GameObject enemyCharacter)
+    private async Task EnemyBasicAttack(GameObject enemyCharacter, string id)
     {
         // Get Enemy
         var enemyCon = enemyCharacter.GetComponent<CharacterController>();
 
         // Wait Attack Speed
         await Task.Delay(Mathf.CeilToInt((enemyCon.attackSpeed * 1000f)));
+
+        if (dieIds.Find(item => item == id) != null)
+        {
+            return;
+        }
 
         // Get Player
         var playerUnit = listPlayerGameObjs[0];
@@ -143,8 +160,8 @@ public class BattleSystem : MonoBehaviour
 
         if (isDead)
         {
+            dieIds.Add(playerCon.id);
             listPlayerGameObjs.Remove(playerUnit);
-            playerUnit = null;
             CheckEndGame(false);
         }
 
@@ -159,12 +176,14 @@ public class BattleSystem : MonoBehaviour
             // Won
             isEnd = true;
             Debug.Log("End Player Win");
+            winLoseUIManagor.Show(GameState.WON);
         }
         else if (!isPlayer && listPlayerGameObjs.Count == 0)
         {
             // Lost
             isEnd = true;
             Debug.Log("End Enemy Win");
+            winLoseUIManagor.Show(GameState.LOSE);
         }
 
     }
